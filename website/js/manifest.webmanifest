@@ -1,0 +1,11 @@
+{
+    "name": "PartyBox",
+    "short_name": "PartyBox",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "img/icon_250.png",
+            "sizes": "250x250"
+        }
+    ]
+}

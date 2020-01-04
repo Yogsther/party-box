@@ -1,0 +1,22 @@
+
+[x] skip function
+    [x] insta skip from owner
+
+[x] only allow owner to seek video
+
+[x] view queue
+    [x] bump videos
+    [/] remove video from queue if owner
+
+
+[x] Spotify support
+    [x] Link spotify account
+    [x] Search spotify
+    [x] Queue songs
+    [x] Play songs
+
+[x] Fix token swapping 
+[x] Save room code in local storage
+[ ] Blue colors
+
+
