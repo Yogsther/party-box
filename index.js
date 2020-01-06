@@ -25,6 +25,10 @@ var keys = [
     "AIzaSyAWMuS6W47o2A72FVJTzKD7lJ9HlvleDiA"
 ];
 
+var redirect_uri = "https://party.ygstr.com/auth";
+var client_id = "e78ad0408c9043d1a05fd5d34fdfac54";
+var client_secret = "50ab169c11fa4c719ee5ea6e642da963";
+
 var cachedSearches = [];
 
 setInterval(() => {
@@ -229,7 +233,7 @@ class Room {
 var rooms = [];
 
 // Create the server and start it on the port in config.json
-var server = http.createServer(app).listen(9991);
+var server = http.createServer(app).listen(80);
 // Bind socket.io to the webserver, (socket.io, REST API and the website are all on the same port)
 var io = require("socket.io")(server);
 
@@ -251,10 +255,6 @@ app.get("/spotify", (req, res) => {
     );
 });
 
-var redirect_uri = "https://party.ygstr.com/auth";
-var client_id = "e78ad0408c9043d1a05fd5d34fdfac54";
-var client_secret = "50ab169c11fa4c719ee5ea6e642da963";
-
 app.get("/auth", (req, res) => {
     var options = {
         url: "https://accounts.spotify.com/api/token",
@@ -270,6 +270,7 @@ app.get("/auth", (req, res) => {
         },
         json: true
     };
+
     request.post(options, (error, response, body) => {
         res.send(`
         <html>

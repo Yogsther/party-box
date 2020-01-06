@@ -1,0 +1,6 @@
+{
+    "redirect": "localhost/auth",
+    "client_id": "SPOTIFY_CLIENT_ID",
+    "client_secret": "SPOTIFY_CLIENT_SECRET",
+    "youtube_keys": ["YOUTUBE_API_KEYS"]
+}
