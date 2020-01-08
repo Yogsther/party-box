@@ -17,8 +17,22 @@
 
 [x] Fix token swapping 
 [x] Save room code in local storage
-[ ] Blue colors
 
+[ ] Refresh tokens
+    [ ] Send host new key on each update of access token
+    [ ] Keep track on age of access_token and update it if it's under 1 hour 
+
+[ ] Stabilize platform
+[ ] Optimize network, only send updated keys in room
+
+[ ] Gradient color background flow effect for songs and possibly menu
+[ ] Display room code at all times (or only on songs, at least in client app)
+
+[ ] Youtube title errors (')
+
+[ ] iPhone css fixed css
+[ ] iPhone PWA improvements
+[ ] Blue colors
 [ ] Share dialog (android) https://chodounsky.net/2019/03/24/progressive-web-application-as-a-share-option-in-android/
 
 

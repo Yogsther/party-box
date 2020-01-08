@@ -3,6 +3,7 @@ const https = require("https");
 const bp = require("body-parser");
 const express = require("express");
 const request = require("request");
+const fs = require("file-system");
 
 var app = express();
 
@@ -14,20 +15,18 @@ app.use(
     })
 );
 
-var active_key = 0;
-var keys = [
-    "AIzaSyBHLSE803wpbtKKrec0PaiYaSPBM_Xs4IA",
-    "AIzaSyDudzVtsTefKQbNFIVFlhJLuIBGxDqcO7I",
-    "AIzaSyC5ZKGEogWk8rhXNBHArR9TiVjIEBI5qds",
-    "AIzaSyCmd7oWDTTF-E68KkvnpwbMeG2Aq4Dg_Gc",
-    "AIzaSyA013f3U9ScDMvRLDjcXL1ZIEDyB9C9PSs",
-    "AIzaSyB_EMbkzOEWJpIq2pp5gJ0Yu57D8nQlhJI",
-    "AIzaSyAWMuS6W47o2A72FVJTzKD7lJ9HlvleDiA"
-];
+var localOptions = fs.readFileSync("options.json");
+localOptions = JSON.parse(localOptions);
 
-var redirect_uri = "https://party.ygstr.com/auth";
-var client_id = "e78ad0408c9043d1a05fd5d34fdfac54";
-var client_secret = "50ab169c11fa4c719ee5ea6e642da963";
+var active_key = 0;
+var keys = localOptions.youtube_keys;
+var redirect_uri = localOptions.redirect;
+var client_id = localOptions.client_id;
+var client_secret = localOptions.client_secret;
+
+console.log(`
+Started server on ${localOptions.port}
+${keys.length} YT-KEYS`);
 
 var cachedSearches = [];
 
@@ -88,6 +87,8 @@ class Room {
         this.paused = false;
         this.skips = [];
         this.skips_needed = 0;
+
+        this.access_token_updated = 0;
     }
 
     add(item) {
@@ -100,6 +101,15 @@ class Room {
         return true;
     }
 
+    checkSpotify(callback = () => {}) {
+        if (Date.now() - this.access_token_updated >= 60 * 60 * 1000) {
+            // Token is older than 60 minutes, update!
+            this.refreshToken(callback);
+        } else {
+            callback();
+        }
+    }
+
     controlAudio(play = true) {
         var options = {
             url:
@@ -110,7 +120,9 @@ class Room {
             },
             json: true
         };
-        request.put(options, (error, response, body) => {});
+        request.put(options, (error, response, body) => {
+            this.update();
+        });
     }
 
     next() {
@@ -183,7 +195,7 @@ class Room {
         io.to(socket_id).emit("update", room);
     }
 
-    refreshToken() {
+    refreshToken(callback = () => {}) {
         if (this.refresh_token) {
             var options = {
                 url: "https://accounts.spotify.com/api/token",
@@ -202,7 +214,16 @@ class Room {
             };
 
             request.post(options, (error, response, body) => {
-                this.access_token = body.access_token;
+                if (body.error) {
+                    this.access_token = false;
+                    this.refresh_token = false;
+                    io.to(this.socket_id).emit("spotify_disabled");
+                } else {
+                    this.access_token = body.access_token;
+                    this.access_token_updated = Date.now();
+                    io.to(this.socket_id).emit("new_token", this.access_token);
+                    callback();
+                }
             });
         }
     }
@@ -291,44 +312,50 @@ io.on("connection", socket => {
         for (let room of rooms) {
             for (let member of room.members) {
                 if (member.socket_id == socket.id) {
-                    if (!room.access_token) return;
-                    https.get(
-                        "https://api.spotify.com/v1/search?access_token=" +
-                            room.access_token +
-                            "&q=" +
-                            encodeURIComponent(query) +
-                            "&type=track",
-                        stream => {
-                            let data = "";
-                            stream.on("data", chunk => {
-                                data += chunk;
-                            });
+                    if (!room.access_token) {
+                        socket.emit("songs", false);
+                        return;
+                    }
+                    room.checkSpotify(() => {
+                        https.get(
+                            "https://api.spotify.com/v1/search?access_token=" +
+                                room.access_token +
+                                "&q=" +
+                                encodeURIComponent(query) +
+                                "&type=track",
+                            stream => {
+                                let data = "";
+                                stream.on("data", chunk => {
+                                    data += chunk;
+                                });
 
-                            stream.on("end", () => {
-                                data = JSON.parse(data);
-                                if (data.error) {
-                                    room.refreshToken();
-                                } else {
-                                    var songs = [];
-                                    for (var item of data.tracks.items) {
-                                        var song = new CachedItem(
-                                            item.id,
-                                            item.name,
-                                            item.album.images[0].url
-                                        );
-                                        songs.push(song);
-                                        cachedSearches[item.id] = song;
+                                stream.on("end", () => {
+                                    data = JSON.parse(data);
+                                    if (data.error) {
+                                        room.refreshToken();
+                                    } else {
+                                        var songs = [];
+                                        for (var item of data.tracks.items) {
+                                            var song = new CachedItem(
+                                                item.id,
+                                                item.name,
+                                                item.album.images[0].url
+                                            );
+                                            songs.push(song);
+                                            cachedSearches[item.id] = song;
+                                        }
+                                        socket.emit("songs", songs);
                                     }
-                                    socket.emit("songs", songs);
-                                }
-                            });
-                        }
-                    );
+                                });
+                            }
+                        );
+                    });
                 }
             }
         }
     });
 
+    // !! DEPRECATED !!
     socket.on("refresh_token", refresh_token => {
         var options = {
             url: "https://accounts.spotify.com/api/token",
@@ -357,6 +384,7 @@ io.on("connection", socket => {
                     room.members[i].uuid == req.uuid ||
                     room.members[i].socket_id == socket.id
                 ) {
+                    io.to(room.members[i].socket_id).emit("kick");
                     room.members.splice(i, 1);
                 }
             }
@@ -365,8 +393,8 @@ io.on("connection", socket => {
         for (let room of rooms) {
             if (room.code == req.code.toUpperCase()) {
                 room.members.push(new User(req.uuid, socket.id));
-                room.update();
                 socket.emit("joined", room);
+                room.update();
             }
         }
     });
@@ -374,6 +402,7 @@ io.on("connection", socket => {
     socket.on("host", cred => {
         var room = new Room(socket.id, cred.access_token, cred.refresh_token);
         rooms.push(room);
+        room.checkSpotify();
         socket.emit("room_created", room.code);
     });
 
@@ -381,6 +410,7 @@ io.on("connection", socket => {
         for (var i = 0; i < rooms.length; i++) {
             if (rooms[i].socket_id == socket.id) {
                 for (var member of rooms[i].members) {
+                    // Kick all users in lobby if the host leaves
                     io.to(member.socket_id).emit("kick");
                 }
                 rooms.splice(i, 1);
@@ -406,16 +436,22 @@ io.on("connection", socket => {
                             io.to(room.socket_id).emit("seek", room.progress);
                         } else {
                             // Audio, seek spotify
-                            var options = {
-                                url:
-                                    "https://api.spotify.com/v1/me/player/seek",
-                                qs: { position_ms: room.progress * 1000 },
-                                headers: {
-                                    Authorization: "Bearer " + room.access_token
-                                },
-                                json: true
-                            };
-                            request.put(options, (error, response, body) => {});
+                            room.checkSpotify(() => {
+                                var options = {
+                                    url:
+                                        "https://api.spotify.com/v1/me/player/seek",
+                                    qs: { position_ms: room.progress * 1000 },
+                                    headers: {
+                                        Authorization:
+                                            "Bearer " + room.access_token
+                                    },
+                                    json: true
+                                };
+                                request.put(
+                                    options,
+                                    (error, response, body) => {}
+                                );
+                            });
                         }
 
                         room.update();
@@ -485,6 +521,8 @@ io.on("connection", socket => {
 
                             if (room.skips.length >= room.skips_needed) {
                                 room.next();
+                            } else {
+                                room.update();
                             }
                         }
                         return;
@@ -517,12 +555,15 @@ io.on("connection", socket => {
             for (var member of room.members) {
                 if (member.socket_id == socket.id) {
                     room.paused = !room.paused;
+                    console.log('Paused: ' + room.paused)
                     if (room.queue.length > 0) {
                         if (room.queue[0].type == "song") {
-                            room.controlAudio(!room.paused);
+                            room.checkSpotify(() => {
+                                room.controlAudio(!room.paused);
+                            });
                         }
                     }
-                    room.update();
+                    room.update()
                     break;
                 }
             }

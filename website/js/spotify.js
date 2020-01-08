@@ -16,7 +16,7 @@ if (access_token && refresh_token) {
                     "!<br><a href='javascript:logout()'>Logout</a>";
             } else {
                 document.getElementById("spotify-login").innerHTML =
-                    "Requesting new token...";
+                    "Spotify enabled.<br><a href='javascript:logout()'>Logout</a>";
                 refreshToken();
             }
         });
@@ -52,15 +52,19 @@ function queueSong(id) {
 
 socket.on("songs", songs => {
     var html = "";
+    if (!songs) {
+        document.getElementById("spotify-results").innerHTML =
+            "<span class='center-text'>Host has not enabled spotify.</span>";
+    } else {
+        for (var song of songs) {
+            html += createEntry(song.title, song.image, song.id, "queueSong");
+        }
 
-    for (var song of songs) {
-        html += createEntry(song.title, song.image, song.id, "queueSong");
+        if (songs.length == 0)
+            document.getElementById("spotify-results").innerHTML =
+                "<span class='center-text'>No songs found.</span>";
+        else document.getElementById("spotify-results").innerHTML = html;
     }
-
-    if (songs.length == 0)
-        document.getElementById("yt-results").innerHTML =
-            "<span class='center-text'>No songs found.</span>";
-    else document.getElementById("spotify-results").innerHTML = html;
 });
 
 function playAudio(id) {
@@ -79,6 +83,11 @@ function hideSpotify() {
     document.getElementById("spotify-viewer").style.display = "none";
 }
 
+socket.on("spotify_disabled", () => {
+    alert("Invalid spotify login credits, you will be logged out.");
+    logout();
+});
+
 window.onSpotifyWebPlaybackSDKReady = () => {
     if (access_token) {
         window.spotifyPlayer = new Spotify.Player({
@@ -95,7 +104,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
         });
         spotifyPlayer.addListener("authentication_error", ({ message }) => {
             refreshToken();
-            alert("Auth error, please reload the page");
+            alert("Auth error, please logout from spotify and try again.");
         });
         spotifyPlayer.addListener("account_error", ({ message }) => {
             alert("Account error, you need preimum");

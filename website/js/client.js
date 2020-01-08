@@ -145,7 +145,8 @@ function joinRoom() {
     </div>
     `;
     tabs.queue = document.createElement("div");
-    tabs.queue.innerHTML = "<span class='center-text''>Queue empty</span>";
+    tabs.queue.innerHTML =
+        "<span class='center-text' style='top: 10px;'>Queue empty</span>";
     tabs.queue.id = "queue-list";
 
     resizeClient();
@@ -186,7 +187,8 @@ socket.on("kick", () => {
 
 function onUpdate() {
     if (tabs.queue && room.queue.length == 0) {
-        tabs.queue.innerHTML = "<span class='center-text'>Queue empty</span>";
+        tabs.queue.innerHTML =
+            "<span class='center-text' style='top: 10px;'>Queue empty</span>";
     } else if (tabs.queue) {
         var html = "";
         for (let item of room.queue) {
@@ -276,7 +278,6 @@ function updatePlayer(xPos) {
 
     var trackWidth = document.getElementById("track").offsetWidth;
     point.style.left = trackWidth * (room.progress / room.length) - 10 + "px";
-    console.log("reee");
 
     document.getElementById("time").innerText =
         room.queue.length > 0

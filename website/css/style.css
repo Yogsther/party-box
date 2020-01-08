@@ -445,3 +445,50 @@ a:visited {
     margin: 0 auto;
     display: block;
 }
+
+#spotify-login-button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    font-family: Circular, Helvetica, Arial, sans-serif;
+    -webkit-box-direction: normal;
+    box-sizing: border-box;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    user-select: none;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 500px;
+    padding: 16px 48px 18px;
+    transition-property: background-color, border-color, color, box-shadow,
+        filter, -webkit-box-shadow, -webkit-filter;
+    transition-duration: 0.3s;
+    border-width: 0;
+    letter-spacing: 2px;
+    min-width: 160px;
+    text-transform: uppercase;
+    white-space: normal;
+    color: #fff;
+    background-color: #1db954;
+    margin-top: 16px;
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    width: 280px;
+    margin-bottom: 15px;
+}
+
+#spotify-login-button:hover {
+    background-color: #1ed760;
+}
+
+#spotify-login-button:active {
+    background-color: #1aa34a;
+    color: #1db954;
+}

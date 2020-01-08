@@ -66,16 +66,17 @@ socket.on("update", r => {
                 hideRoomStatus();
                 showYoutube();
                 playVideo(room.queue[0].id);
-                if (room.paused) youtubePlayer.pauseVideo();
+                if (room.paused && youtubePlayer.pauseVideo)
+                    youtubePlayer.pauseVideo();
                 else youtubePlayer.playVideo();
             } else {
-                youtubePlayer.pauseVideo();
+                if (youtubePlayer.pauseVideo) youtubePlayer.pauseVideo();
                 playAudio(room.queue[0].id);
                 document.getElementById("album").src = room.queue[0].image;
             }
         } else {
             showRoomStatus();
-            youtubePlayer.pauseVideo();
+            if (youtubePlayer.pauseVideo) youtubePlayer.pauseVideo();
         }
     } else {
         onUpdate();
