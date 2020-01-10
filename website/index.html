@@ -1,72 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="apple-touch-icon" href="img/icon_250.png" sizes="250x250" />
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="apple-touch-icon" href="img/icon_250.png" sizes="250x250" />
 
-        <meta
-            name="apple-mobile-web-app-status-bar-style"
-            content="black-translucent"
-        />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent"
+		/>
 
-        <link rel="shortcut icon" href="img/icon_250.png" type="image/x-icon" />
+		<link rel="shortcut icon" href="img/icon_250.png" type="image/x-icon" />
 
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="img/icon_250.png" />
-        <link rel="manifest" href="js/manifest.webmanifest" />
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="icon" href="img/icon_250.png" />
+		<link rel="manifest" href="js/manifest.webmanifest" />
+		<meta name="viewport" content="width=device-width, user-scalable=no" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-        <link
-            href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
-            rel="stylesheet"
-        />
+		<link
+			href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+			rel="stylesheet"
+		/>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-        <link rel="stylesheet" href="css/style.css" />
-        <title>PartyBox</title>
-    </head>
-    <body>
-        <div id="spotify-viewer" style="display: none;">
-            <img src="" id="album" />
-        </div>
-        <div id="wrap">
-            <img src="img/icon_transparent.png" alt="" id="icon" />
-            <input
-                spellcheck="false"
-                type="text"
-                placeholder="ROOM NAME"
-                id="room-code-input"
-                oninput="code(this)"
-                maxlength="5"
-            />
-            <span id="host-room-text"
-                >or
-                <span id="host-room-button" onclick="host()"
-                    >Host Room</span
-                ></span
-            >
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+		<link rel="stylesheet" href="css/style.css" />
+		<title>PartyBox</title>
+	</head>
+	<body>
+		<div id="spotify-viewer" style="display: none;">
+			<img src="" id="album" />
+		</div>
+		<div id="wrap">
+			<img src="img/icon_transparent.png" alt="" id="icon" />
+			<input
+				spellcheck="false"
+				type="text"
+				placeholder="ROOM NAME"
+				id="room-code-input"
+				oninput="code(this)"
+				maxlength="5"
+			/>
+			<span id="host-room-text"
+				>or
+				<span id="host-room-button" onclick="host()"
+					>Host Room</span
+				></span
+			>
 
-            <div id="spotify-login">
-                <a href="/spotify" id="spotify-login-button"
-                    >Login with Spotify</a
-                >
+			<div id="spotify-login">
+				<a href="/spotify" id="spotify-login-button"
+					>Login with Spotify</a
+				>
 
-                Only the host needs to login
-            </div>
-        </div>
+				Only the host needs to login
+			</div>
+		</div>
 
-        <span id="room-status"></span>
-        <div id="youtube-player"">
+		<span id="room-status"></span>
+		<div id="youtube-player"">
 
-        <script src="js/main.js"></script>
-        <script src="js/client.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+		<script src="js/gradient.js"></script>
+		<script src="js/main.js"></script>
+		<script src="js/client.js"></script>
 
-        <script src="js/spotify.js"></script>
-        <script src="https://sdk.scdn.co/spotify-player.js"></script>
-        <script src="https://www.youtube.com/iframe_api"></script>
-    </body>
+		<script src="js/spotify.js"></script>
+		<script src="https://sdk.scdn.co/spotify-player.js"></script>
+		<script src="https://www.youtube.com/iframe_api"></script>
+	</body>
 </html>
