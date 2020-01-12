@@ -26,9 +26,10 @@
 
 [x] Show user feedback when adding item to queue (change color of add button)
 
-[ ] Gradient color background flow effect for songs and possibly menu
+[>] Gradient color background flow effect for songs and possibly menu
 [ ] Display room code at all times (or only on songs, at least in client app)
 
+[ ] Search UI and Queue UI fix
 [ ] Youtube title errors (')
 
 [ ] iPhone css fixed css
@@ -38,6 +39,6 @@
 
 
 ~ BUGS ~
-
+ - PRIO: Skipping fast skips too many songs on spotify triggered by ended event from host!!!
+ - Change scene not updaing background colors (gradient)
  - Adding something to the queue (video) is triggering two updates 
- - type of undefined ? rad: 149 > if (this.queue[0].type == "song" && this.queue[!!!!!1!!!!].type

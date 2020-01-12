@@ -146,9 +146,8 @@ class Room {
 	}
 
 	next() {
-		if (this.queue[0].type == "song" && this.queue[1].type == "video") {
-			this.controlAudio(false);
-		}
+		console.log("SKIP");
+		this.controlAudio(false);
 		this.skips = [];
 		this.progress = 0;
 		this.length = 0;
@@ -255,7 +254,7 @@ class Room {
 				headers: {
 					Authorization:
 						"Basic " +
-						new Buffer(client_id + ":" + client_secret).toString(
+						Buffer.from(client_id + ":" + client_secret).toString(
 							"base64"
 						)
 				},
@@ -278,8 +277,8 @@ class Room {
 	}
 
 	generateCode() {
-		var vowels = "AEIOUY".split("");
-		var consonants = "BCDFGHJKLMNPRSTV";
+		var vowels = "AEIOU".split("");
+		var consonants = "BDFGHJKLMNPRSTV";
 
 		var code = "";
 		for (var i = 0; i < 5; i++) {
@@ -288,11 +287,6 @@ class Room {
 			else if (consonants.indexOf(code[i - 1]) != -1) {
 				// Last char was consonant
 				set = vowels;
-			} else {
-				if (Math.random() > 0.5) {
-					set = vowels;
-					set.splice(set.indexOf(code[i - 1]), 1);
-				}
 			}
 			code += set[Math.floor(Math.random() * set.length)];
 		}
@@ -338,7 +332,7 @@ app.get("/auth", (req, res) => {
 		headers: {
 			Authorization:
 				"Basic " +
-				new Buffer(client_id + ":" + client_secret).toString("base64")
+				Buffer.from(client_id + ":" + client_secret).toString("base64")
 		},
 		json: true
 	};
@@ -428,7 +422,7 @@ io.on("connection", socket => {
 			headers: {
 				Authorization:
 					"Basic " +
-					new Buffer(client_id + ":" + client_secret).toString(
+					Buffer.from(client_id + ":" + client_secret).toString(
 						"base64"
 					)
 			},
@@ -457,8 +451,10 @@ io.on("connection", socket => {
 				room.members.push(new User(req.uuid, socket.id));
 				socket.emit("joined", room);
 				room.update();
+				return;
 			}
 		}
+		socket.emit("invalid_code");
 	});
 
 	socket.on("host", cred => {
@@ -576,15 +572,18 @@ io.on("connection", socket => {
 			for (let member of room.members) {
 				if (room.queue.length > 0) {
 					if (member.socket_id == socket.id) {
-						if (room.queue[0].socket_id == socket.id) {
+						if (room.queue[0].uuid == member.uuid) {
 							room.next();
-						} else if (room.skips.indexOf(socket.id) == -1) {
-							room.skips.push(socket.id);
+							return;
+						} else if (room.skips.indexOf(member.uuid) == -1) {
+							room.skips.push(member.uuid);
 
 							if (room.skips.length >= room.skips_needed) {
 								room.next();
+								return;
 							} else {
 								room.update();
+								return;
 							}
 						}
 						return;
@@ -605,6 +604,7 @@ io.on("connection", socket => {
 	});
 
 	socket.on("ended", () => {
+		console.log("SOCKET ENDED");
 		for (var room of rooms) {
 			if (room.socket_id == socket.id) {
 				room.next();

@@ -13,6 +13,7 @@ var isHost = false;
 var currentlyPlaying = false;
 
 window.onload = () => {
+	resizeCanvas();
 	initializeHost();
 	if (!inRoom) document.getElementById("room-code-input").focus();
 	if (localStorage.getItem("room")) {
@@ -21,6 +22,9 @@ window.onload = () => {
 			uuid
 		});
 	}
+
+	gradientLoop();
+	startLoop();
 };
 
 function code(el) {
@@ -45,7 +49,8 @@ socket.on("room_created", code => {
 	document.getElementById("wrap").style.display = "none";
 	document.getElementById(
 		"room-status"
-	).innerHTML = `<span id="title">Room <span style='color:var(--blu);'>${code}</span>
+	).innerHTML = ` <span id="title" style='color:var(--blu);'>Room <span style="color:white;">${code}</span>
+					<span id="link">${location.href}</span>
                     <span id="room-status-description">0 members</span>`;
 	isHost = true;
 });
@@ -56,14 +61,14 @@ socket.on("seek", progress => {
 });
 
 document.getElementById("album").onload = () => {
-	var pallete = ct.getPalette(document.getElementById("album"));
-	for (var i = 0; i < 2; i++) {
-		var colorSet = pallete[i];
-		backgroundColors[
-			i
-		] = `rgb(${colorSet[0]}, ${colorSet[1]}, ${colorSet[2]})`;
-	}
+	displayAlbum();
 };
+
+socket.on("invalid_code", () => {
+	document.getElementById("room-code-input").style.border =
+		"solid 3px #f90a46";
+	localStorage.removeItem("room");
+});
 
 socket.on("update", r => {
 	console.log("Updated packets ", Object.keys(r));
@@ -107,10 +112,6 @@ socket.on("update", r => {
 	}
 });
 
-socket.on("debug", () => {
-	socket.emit("debug_join", uuid);
-});
-
 socket.on("joined", r => {
 	room = r;
 	joinRoom();
@@ -128,10 +129,14 @@ function hideYoutube() {
 function showRoomStatus() {
 	hideYoutube();
 	hideSpotify();
+	startLoop();
 	document.getElementById("room-status").style.display = "block";
+	palette = ["#0b2746", "#2c5d92"];
 }
 
 function hideRoomStatus() {
+	stopLoop();
+	palette = [];
 	document.getElementById("room-status").style.display = "none";
 }
 
@@ -193,6 +198,7 @@ window.onresize = () => {
 	if (inRoom) {
 		resizeClient();
 	}
+	resizeCanvas();
 };
 
 function playVideo(id) {

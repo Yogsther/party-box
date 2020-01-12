@@ -11,7 +11,7 @@ if (access_token && refresh_token) {
 		.then(json => {
 			if (json.display_name) {
 				document.getElementById("spotify-login").innerHTML =
-					"Spotify enabled, " +
+					"Spotify enabled by " +
 					json.display_name +
 					"!<br><a href='javascript:logout()'>Logout</a>";
 			} else {
@@ -74,13 +74,19 @@ function playAudio(id) {
 	showSpotify();
 }
 
+function displayAlbum() {
+	setPaletteFromImage(document.getElementById("album"));
+}
+
 function showSpotify() {
 	document.getElementById("spotify-viewer").style.display = "block";
 	hideYoutube();
 	hideRoomStatus();
+	startLoop();
 }
 
 function hideSpotify() {
+	stopLoop();
 	document.getElementById("spotify-viewer").style.display = "none";
 }
 
