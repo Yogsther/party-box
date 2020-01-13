@@ -38,13 +38,14 @@ var localOptions = fs.readFileSync("options.json");
 localOptions = JSON.parse(localOptions);
 
 var active_key = 0;
+var port = localOptions.port;
 var keys = localOptions.youtube_keys;
 var redirect_uri = localOptions.redirect;
 var client_id = localOptions.client_id;
 var client_secret = localOptions.client_secret;
 
 console.log(`
-Started server on ${localOptions.port}
+Started server on ${port}
 ${keys.length} YT-KEYS`);
 
 var cachedSearches = [];
@@ -299,7 +300,7 @@ var rooms = [];
 if (DEBUG) rooms.push(new Room());
 
 // Create the server and start it on the port in config.json
-var server = http.createServer(app).listen(80);
+var server = http.createServer(app).listen(port);
 // Bind socket.io to the webserver, (socket.io, REST API and the website are all on the same port)
 var io = require("socket.io")(server);
 
