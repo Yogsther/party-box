@@ -71,7 +71,7 @@ socket.on("invalid_code", () => {
 });
 
 socket.on("update", r => {
-	console.log("Updated packets ", Object.keys(r));
+	//console.log("Updated packets ", Object.keys(r));
 	for (var packet in r) {
 		room[packet] = r[packet];
 	}
@@ -184,7 +184,7 @@ function initializeHost() {
 }
 
 function onYoutubeReady() {
-	console.log("YouTube Ready.");
+	console.log("YouTube ready!");
 }
 
 window.onresize = () => {

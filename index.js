@@ -107,9 +107,48 @@ class Room {
 		this.paused = false;
 		this.skips = [];
 		this.skips_needed = 0;
+		this.skipped_ended_song = false;
+		this.seeking = false;
 
 		this.last_sent_room = {};
 		this.access_token_updated = 0;
+
+		this.updating_spotify = false;
+	}
+
+	statusUpdate() {
+		var options = {
+			url: "https://api.spotify.com/v1/me/player/",
+			headers: {
+				Authorization: "Bearer " + this.access_token
+			},
+			json: true
+		};
+		request.get(options, (error, response, body) => {
+			if (body && body.item) {
+				var diff = Math.abs(
+					this.progress - Math.round(body.progress_ms / 1000)
+				);
+
+				console.log({
+					diff,
+					progress: this.progress,
+					spotify: body.progress_ms / 1000
+				});
+
+				if (!this.seeking && diff > 50 && !isNaN(diff)) {
+					if (this.queue && this.queue.length > 0) {
+						this.next();
+					} else {
+						this.controlAudio(false);
+					}
+					this.update();
+				} else {
+					this.progress = Math.round(body.progress_ms / 1000);
+					this.length = Math.round(body.item.duration_ms / 1000);
+				}
+			}
+		});
 	}
 
 	add(item) {
@@ -146,18 +185,18 @@ class Room {
 		});
 	}
 
-	next() {
-		console.log("SKIP");
+	next(callback = () => {}) {
+		console.log("NEXT CALLED");
 		this.controlAudio(false);
 		this.skips = [];
 		this.progress = 0;
 		this.length = 0;
 		this.queue.splice(0, 1);
 		this.serverPlayedTrack = false;
-		this.update();
+		this.update(callback);
 	}
 
-	update() {
+	update(callback = () => {}) {
 		this.progress = Math.round(this.progress);
 		this.skips_needed = Math.ceil(this.members.length / 2);
 
@@ -180,26 +219,6 @@ class Room {
 			? cachedSearches[this.queue[0].id].title
 			: "Queue empty";
 
-		if (this.queue.length > 0 && !this.serverPlayedTrack) {
-			if (this.queue[0].type == "song") {
-				var options = {
-					url: "https://api.spotify.com/v1/me/player/play",
-					body: {
-						uris: ["spotify:track:" + this.queue[0].id]
-					},
-					headers: {
-						Authorization: "Bearer " + this.access_token
-					},
-					json: true
-				};
-
-				request.put(options, (error, response, body) => {
-					this.serverPlayedTrack = true;
-					this.paused = false;
-				});
-			}
-		}
-
 		var packets = {};
 		let room = Object.assign({}, this);
 		for (let key in room) {
@@ -219,6 +238,32 @@ class Room {
 					);
 				}
 			}
+		}
+
+		if (this.queue.length > 0 && !this.serverPlayedTrack) {
+			if (this.queue[0].type == "song") {
+				var options = {
+					url: "https://api.spotify.com/v1/me/player/play",
+					body: {
+						uris: ["spotify:track:" + this.queue[0].id]
+					},
+					headers: {
+						Authorization: "Bearer " + this.access_token
+					},
+					json: true
+				};
+
+				request.put(options, (error, response, body) => {
+					this.serverPlayedTrack = this.queue[0].id;
+					this.skipped_ended_song = false;
+					this.paused = false;
+					callback();
+				});
+			} else {
+				callback();
+			}
+		} else {
+			callback();
 		}
 
 		function equal(a, b) {
@@ -494,6 +539,7 @@ io.on("connection", socket => {
 						if (room.queue[0].type == "video") {
 							io.to(room.socket_id).emit("seek", room.progress);
 						} else {
+							this.seeking = true;
 							// Audio, seek spotify
 							room.checkSpotify(() => {
 								var options = {
@@ -508,7 +554,9 @@ io.on("connection", socket => {
 								};
 								request.put(
 									options,
-									(error, response, body) => {}
+									(error, response, body) => {
+										this.seeking = false;
+									}
 								);
 							});
 						}
@@ -590,6 +638,16 @@ io.on("connection", socket => {
 						return;
 					}
 				}
+			}
+		}
+	});
+
+	socket.on("spotify-status-changed", () => {
+		for (var room of rooms) {
+			if (room.socket_id == socket.id) {
+				/* 	room.progress = status.progress;
+				room.length = status.length; */
+				room.statusUpdate();
 			}
 		}
 	});
