@@ -6,6 +6,7 @@ const bp = require("body-parser");
 const express = require("express");
 const request = require("request");
 const fs = require("file-system");
+const md5 = require("md5");
 
 Array.prototype.equals = function(array) {
     if (!array) return false;
@@ -52,14 +53,7 @@ var cachedSearches = [];
 
 setInterval(() => {
     for (let room of rooms) {
-        if (
-            !room.paused &&
-            room.queue.length > 0 &&
-            room.members.length > 0 &&
-            room.length > room.progress
-        ) {
-            room.progress++;
-        }
+        room.routineCheck();
     }
 }, 1000);
 
@@ -93,12 +87,14 @@ class QueueItem {
 
 class Room {
     constructor(socket_id, access_token, refresh_token) {
-        this.code = this.generateCode();
-        this.members = [];
+        this.code = this.generateCodeSafe();
+
+        this.update_ids = 0;
         this.socket_id = socket_id;
         this.access_token = access_token;
         this.refresh_token = refresh_token;
 
+        this.members = [];
         this.serverPlayedTrack = false;
         this.queue = [];
         this.length = 0;
@@ -107,9 +103,71 @@ class Room {
         this.paused = false;
         this.skips = [];
         this.skips_needed = 0;
+        this.skipped_ended_song = false;
+        this.seeking = false;
 
         this.last_sent_room = {};
         this.access_token_updated = 0;
+        this.updating_spotify = false;
+
+        this.ticks = 0;
+    }
+
+    routineCheck() {
+        this.ticks++;
+        if (
+            !this.paused &&
+            this.queue.length > 0 &&
+            this.members.length > 0 &&
+            this.length > this.progress
+        ) {
+            this.progress++;
+        }
+
+        if (this.queue[0] && this.queue[0].type == "song") {
+            if (this.ticks % 10 == 0) this.statusUpdate();
+            if (this.length > 5 && this.length - this.progress < 4) {
+                // Less than 4 seconds left on a spotify track
+                console.log("Song near end, going for next");
+                this.next();
+            }
+        }
+    }
+
+    statusUpdate() {
+        this.checkSpotify(() => {
+            var options = {
+                url: "https://api.spotify.com/v1/me/player/",
+                headers: {
+                    Authorization: "Bearer " + this.access_token
+                },
+                json: true
+            };
+            request.get(options, (error, response, body) => {
+                if (body && body.item) {
+                    var diff = Math.abs(
+                        this.progress - Math.round(body.progress_ms / 1000)
+                    );
+
+                    /*  if (!this.seeking && diff > 50 && !isNaN(diff)) {
+						if (this.queue && this.queue.length > 0) {
+							this.next();
+						} else {
+							this.controlAudio(false);
+						}
+						this.update();
+					} else { */
+                    if (Date.now() - this.seeking > 1000) {
+                        this.progress = Math.round(body.progress_ms / 1000);
+                        this.length = Math.round(body.item.duration_ms / 1000);
+                    }
+                    console.log("SEEK UPDATED FROM SPOTIFY", this.progress);
+                    this.update();
+
+                    /*  } */
+                }
+            });
+        });
     }
 
     add(item) {
@@ -117,6 +175,7 @@ class Room {
             if (entry.id == item.id) return false;
         }
 
+        if (this.queue.length == 0) this.progress = 0;
         this.queue.push(item);
         this.update();
         return true;
@@ -146,23 +205,25 @@ class Room {
         });
     }
 
-    next() {
-        console.log("SKIP");
-        this.controlAudio(false);
+    next(callback = () => {}) {
         this.skips = [];
         this.progress = 0;
         this.length = 0;
         this.queue.splice(0, 1);
+
+        if (this.queue.length == 0 || this.queue[0].type == "video") {
+            this.controlAudio(false);
+        }
         this.serverPlayedTrack = false;
-        this.update();
+        this.update(callback());
     }
 
     refreshUpdate() {
-        this.this.last_sent_room = {};
+        this.last_sent_room = {};
         this.update();
     }
 
-    update() {
+    update(callback = () => {}) {
         this.progress = Math.round(this.progress);
         this.skips_needed = Math.ceil(this.members.length / 2);
 
@@ -185,26 +246,6 @@ class Room {
             ? cachedSearches[this.queue[0].id].title
             : "Queue empty";
 
-        if (this.queue.length > 0 && !this.serverPlayedTrack) {
-            if (this.queue[0].type == "song") {
-                var options = {
-                    url: "https://api.spotify.com/v1/me/player/play",
-                    body: {
-                        uris: ["spotify:track:" + this.queue[0].id]
-                    },
-                    headers: {
-                        Authorization: "Bearer " + this.access_token
-                    },
-                    json: true
-                };
-
-                request.put(options, (error, response, body) => {
-                    this.serverPlayedTrack = true;
-                    this.paused = false;
-                });
-            }
-        }
-
         var packets = {};
         let room = Object.assign({}, this);
         for (let key in room) {
@@ -226,6 +267,37 @@ class Room {
             }
         }
 
+        if (this.queue.length > 0 && !this.serverPlayedTrack) {
+            if (this.queue[0].type == "song") {
+                var options = {
+                    url: "https://api.spotify.com/v1/me/player/play",
+                    body: {
+                        uris: ["spotify:track:" + this.queue[0].id]
+                    },
+                    headers: {
+                        Authorization: "Bearer " + this.access_token
+                    },
+                    json: true
+                };
+
+                request.put(options, (error, response, body) => {
+                    if (this.queue[0])
+                        this.serverPlayedTrack = this.queue[0].id;
+                    else {
+                        this.controlAudio(false);
+                        return;
+                    }
+                    this.skipped_ended_song = false;
+                    this.paused = false;
+                    callback();
+                });
+            } else {
+                callback();
+            }
+        } else {
+            callback();
+        }
+
         function equal(a, b) {
             if (Array.isArray(a)) {
                 if (a.length != b.length) return false;
@@ -243,6 +315,8 @@ class Room {
         for (let member of this.members) {
             this.updateUser(member.socket_id, packets);
         }
+
+        this.update_ids++;
     }
 
     updateUser(socket_id, packets) {
@@ -282,6 +356,20 @@ class Room {
         }
     }
 
+    generateCodeSafe() {
+        var code;
+        var forbidden = [
+            "c3e2d42739ddebabfd694c3c6942c165",
+            "c02b7d24a066adb747fdeb12deb21bfa",
+            "5f86bdf702e28db0b889adece851dfd9"
+        ];
+        do {
+            code = this.generateCode();
+        } while (forbidden.indexOf(md5(code)) != -1);
+
+        return code;
+    }
+
     generateCode() {
         var vowels = "AEIOU".split("");
         var consonants = "BDFGHJKLMNPRSTV";
@@ -296,6 +384,7 @@ class Room {
             }
             code += set[Math.floor(Math.random() * set.length)];
         }
+
         return code;
     }
 }
@@ -445,7 +534,7 @@ io.on("connection", socket => {
             if (room.code == req.code.toUpperCase()) {
                 room.members.push(new User(req.uuid, socket.id));
                 socket.emit("joined", room);
-                room.refreshUpdate();
+                room.update();
                 return;
             }
         }
@@ -470,11 +559,29 @@ io.on("connection", socket => {
             }
         }
         for (var room of rooms) {
-            for (var i = 0; i < room.members.length; i++) {
-                if (room.members[i].socket_id == socket.id) {
-                    room.members.splice(i, 1);
-                    room.update();
+            if (room.members)
+                for (var i = 0; i < room.members.length; i++) {
+                    if (room.members[i].socket_id == socket.id) {
+                        room.members.splice(i, 1);
+                        room.update();
+                    }
                 }
+        }
+    });
+
+    socket.on("sync", () => {
+        for (let room of rooms) {
+            var authorized = false;
+            if (room.socket_id == socket.id) authorized = true;
+            if (!authorized) {
+                for (var member of room.members) {
+                    if (member.socket_id == socket.id) {
+                        authorized = true;
+                    }
+                }
+            }
+            if (authorized) {
+                room.refreshUpdate();
             }
         }
     });
@@ -488,6 +595,8 @@ io.on("connection", socket => {
                         if (room.queue[0].type == "video") {
                             io.to(room.socket_id).emit("seek", room.progress);
                         } else {
+                            console.log("Request to seek", room.progress);
+
                             // Audio, seek spotify
                             room.checkSpotify(() => {
                                 var options = {
@@ -502,12 +611,14 @@ io.on("connection", socket => {
                                 };
                                 request.put(
                                     options,
-                                    (error, response, body) => {}
+                                    (error, response, body) => {
+                                        console.log("Seek done");
+                                        room.seeking = Date.now();
+                                    }
                                 );
                             });
                         }
 
-                        room.update();
                         return;
                     }
                 }
@@ -584,6 +695,16 @@ io.on("connection", socket => {
                         return;
                     }
                 }
+            }
+        }
+    });
+
+    socket.on("spotify-status-changed", () => {
+        for (var room of rooms) {
+            if (room.socket_id == socket.id) {
+                /* 	room.progress = status.progress;
+				room.length = status.length; */
+                room.statusUpdate();
             }
         }
     });

@@ -48,7 +48,7 @@ function updatePalette() {
 }
 
 function stepParticles() {
-    var speed = 3;
+    var speed = 0.2;
     for (let particle of gradientParticles) {
         if (outOfBound(particle)) particle.direction += 270;
         particle.x += Math.cos(particle.direction / (180 / Math.PI)) * speed;

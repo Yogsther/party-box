@@ -81,6 +81,7 @@ function displayAlbum() {
 
 function showSpotify() {
     document.getElementById("spotify-viewer").style.display = "block";
+    document.getElementById("room-code-box").style.display = "block";
     hideYoutube();
     hideRoomStatus();
     startLoop();
@@ -121,19 +122,14 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
         // Playback status updates
         spotifyPlayer.addListener("player_state_changed", state => {
-            socket.emit("status", {
-                length: Math.round(state.duration / 1000),
-                progress: Math.round(state.position / 1000)
-            });
-            if (room.queue && room.queue.length > 0) {
-                if (
-                    state.track_window.current_track.id != room.queue[0].id &&
-                    state.position == 0
-                ) {
-                    // Wrong song
-                    socket.emit("ended");
-                }
-            }
+            socket.emit("spotify-status-changed");
+            /* socket.emit("status", {
+				length: Math.round(state.duration / 1000),
+				progress: Math.round(state.position / 1000)
+			});
+			 */
+
+            //console.log(state);
         });
 
         // Ready
