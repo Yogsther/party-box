@@ -37,9 +37,8 @@
 [x] Generate options.json and beautify it
 
 
+[x] Better look to search results (blur, gradient)
 [ ] Swipe up to close / open media controlls
-[ ] Better search/queue UI
-[ ] Better look to search results (blur, gradient)
 [ ] Share dialog (android) https://chodounsky.net/2019/03/24/progressive-web-application-as-a-share-option-in-android/
 
 

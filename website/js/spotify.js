@@ -58,7 +58,14 @@ socket.on("songs", songs => {
             "<span class='center-text'>Host has not enabled spotify.</span>";
     } else {
         for (var song of songs) {
-            html += createEntry(song.title, song.image, song.id, "queueSong");
+            html += createEntry(
+                song.title,
+                song.artist,
+                song.image,
+                song.id,
+                "queueSong",
+                "song"
+            );
         }
 
         if (songs.length == 0)

@@ -72,10 +72,11 @@ setInterval(() => {
 }, 1000);
 
 class CachedItem {
-    constructor(id, title, image) {
+    constructor(id, title, image, artist) {
         this.id = id;
         this.title = title;
         this.image = image;
+        this.artist = artist;
     }
 }
 
@@ -87,9 +88,10 @@ class User {
 }
 
 class QueueItem {
-    constructor(id, title, image, type, socket_id, uuid) {
+    constructor(id, title, artist, image, type, socket_id, uuid) {
         this.id = id;
         this.title = title;
+        this.artist = artist;
         this.image = image;
         this.type = type;
         this.socket_id = socket_id;
@@ -142,7 +144,7 @@ class Room {
             if (this.ticks % 10 == 0) this.statusUpdate();
             if (this.length > 5 && this.length - this.progress < 4) {
                 // Less than 4 seconds left on a spotify track
-                console.log("Song near end, going for next");
+
                 this.next();
             }
         }
@@ -166,7 +168,7 @@ class Room {
                         this.progress = Math.round(body.progress_ms / 1000);
                         this.length = Math.round(body.item.duration_ms / 1000);
                     }
-                    console.log("SEEK UPDATED FROM SPOTIFY", this.progress);
+
                     this.update();
                 }
             });
@@ -482,8 +484,10 @@ io.on("connection", socket => {
                                             var song = new CachedItem(
                                                 item.id,
                                                 item.name,
-                                                item.album.images[0].url
+                                                item.album.images[0].url,
+                                                item.artists[0].name
                                             );
+
                                             songs.push(song);
                                             cachedSearches[item.id] = song;
                                         }
@@ -549,6 +553,7 @@ io.on("connection", socket => {
         rooms.push(room);
         room.checkSpotify();
         socket.emit("room_created", room.code);
+        console.log("Room created " + room.code);
     });
 
     socket.on("disconnect", () => {
@@ -598,8 +603,6 @@ io.on("connection", socket => {
                         if (room.queue[0].type == "video") {
                             io.to(room.socket_id).emit("seek", room.progress);
                         } else {
-                            console.log("Request to seek", room.progress);
-
                             // Audio, seek spotify
                             room.checkSpotify(() => {
                                 var options = {
@@ -615,7 +618,6 @@ io.on("connection", socket => {
                                 request.put(
                                     options,
                                     (error, response, body) => {
-                                        console.log("Seek done");
                                         room.seeking = Date.now();
                                     }
                                 );
@@ -640,6 +642,7 @@ io.on("connection", socket => {
                             new QueueItem(
                                 id,
                                 cached.title,
+                                cached.artist,
                                 cached.image,
                                 "song",
                                 socket.id,
@@ -723,7 +726,6 @@ io.on("connection", socket => {
     });
 
     socket.on("ended", () => {
-        console.log("SOCKET ENDED");
         for (var room of rooms) {
             if (room.socket_id == socket.id) {
                 room.next();
@@ -759,6 +761,7 @@ io.on("connection", socket => {
                             new QueueItem(
                                 id,
                                 cachedSearches[id].title,
+                                cachedSearches[id].artist,
                                 cachedSearches[id].image,
                                 "video",
                                 socket.id,
@@ -823,7 +826,9 @@ io.on("connection", socket => {
                                 var cachedItem = new CachedItem(
                                     video.id.videoId,
                                     video.snippet.title,
-                                    video.snippet.thumbnails.medium.url
+
+                                    video.snippet.thumbnails.medium.url,
+                                    video.snippet.channelTitle
                                 );
                                 cachedItems.push(cachedItem);
                                 cachedSearches[cachedItem.id] = cachedItem;

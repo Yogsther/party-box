@@ -75,11 +75,9 @@ socket.on("invalid_code", () => {
 socket.on("update", r => {
     //console.log("Updated packets ", Object.keys(r));
     if (r["update_ids"] != room.update_ids + 1) {
-        console.log("Out of sync");
         socket.emit("sync");
-    } else {
-        console.log("In sync");
     }
+
     for (var packet in r) {
         room[packet] = r[packet];
     }

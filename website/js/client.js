@@ -199,9 +199,11 @@ function onUpdate() {
         for (let item of room.queue) {
             html += createQueueEntry(
                 item.title,
+                item.artist,
                 item.image,
                 item.id,
-                item.votes.indexOf(uuid) != -1
+                item.votes.indexOf(uuid) != -1,
+                item.type
             );
         }
         tabs.queue.innerHTML = html;
@@ -214,15 +216,34 @@ function bump(id) {
     socket.emit("bump", id);
 }
 
-function createQueueEntry(title, thumbnail, id, bumped) {
+function createQueueEntry(title, artist, thumbnail, id, bumped, type) {
     return `
-<div class="entry" onclick="bump('${id}')">
+<div class="entry" onclick="bump('${id}')" >
 	<div class="entry-overlay" style="background: url(${thumbnail})"></div>
+	<div class="gradient-effect"></div>
     <img class="thumbnail" src="${thumbnail}">
-    <span class="video-title">${title}</span>
+	
+	<div class="titles" style="width: ${type == "song" ? "65%" : "47%"};">
+		<span class="video-title">${title}</span>
+		<span class="video-artist">${artist}</span>
+	</div>
     <svg xmlns="http://www.w3.org/2000/svg" title="Bump item"  style="fill:var(${
         bumped ? "--blu" : "--dark"
     });" class="add-button" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+</div>`;
+}
+
+function createEntry(title, artist, thumbnail, id, fun, type) {
+    return `
+<div class="entry" style="background:url(${thumbnail});" onclick="${fun}('${id}')">
+		<div class="entry-overlay" style="background: url(${thumbnail})"></div>
+		<div class="gradient-effect"></div>
+    <img class="thumbnail" src="${thumbnail}">
+    <div class="titles" style="width: ${type == "song" ? "65%" : "47%"};">
+		<span class="video-title">${title}</span>
+		<span class="video-artist">${artist}</span>
+	</div>
+    <svg xmlns="http://www.w3.org/2000/svg"  item-id="${id}" class="add-button" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
 </div>`;
 }
 
@@ -315,7 +336,14 @@ socket.on("videos", results => {
     var html = "";
 
     for (var video of results) {
-        html += createEntry(video.title, video.image, video.id, "queueVideo");
+        html += createEntry(
+            video.title,
+            video.artist,
+            video.image,
+            video.id,
+            "queueVideo",
+            "video"
+        );
     }
 
     if (results.length == 0)
@@ -324,16 +352,6 @@ socket.on("videos", results => {
     else document.getElementById("yt-results").innerHTML = html;
     updateQueueButtons();
 });
-
-function createEntry(title, thumbnail, id, fun) {
-    return `
-<div class="entry" style="background:url(${thumbnail});">
-	<div class="entry-overlay"></div>
-    <img class="thumbnail" src="${thumbnail}">
-    <span class="video-title">${title}</span>
-    <svg xmlns="http://www.w3.org/2000/svg" onclick="${fun}('${id}')" item-id="${id}" class="add-button" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
-</div>`;
-}
 
 function updateQueueButtons() {
     for (var el of document.getElementsByClassName("add-button")) {

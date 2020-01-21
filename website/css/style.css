@@ -384,13 +384,26 @@ input:focus {
 	position: relative;
 	/* 	height: 50px; */
 	width: 90%;
-	border-radius: 10px;
+	border-radius: 15px;
 	background-color: #eaeaea;
 	margin: 0 auto;
 	margin-bottom: 10px;
 	margin-top: 10px;
 	overflow: hidden;
 	height: 80px;
+	padding: 5px;
+}
+
+
+.gradient-effect {
+	display: block;
+	width: calc(100% + 60px);
+	height: 140px;
+	position: absolute;
+	top: -30px;
+	left: -30px;
+	pointer-events: none;
+	background-image: linear-gradient(270deg, black 10%, rgba(0, 0, 0, 0)) !important;
 }
 
 .entry-overlay {
@@ -408,25 +421,48 @@ input:focus {
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-position: center;
-	background-image: linear-gradient(90deg, black, rgba(0, 0, 0, .5)) !important;
+
+}
+
+.titles {
+	width: 65%;
+	display: block;
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	overflow: hidden;
+	height: 50px;
+
 }
 
 .video-title {
 	position: absolute;
-	left: 100px;
-	top: 5px;
+	right: 0px;
+	top: 0px;
+	font-size: 22px;
+	width: 100%;
+	height: 30px;
 	display: block;
-	width: calc(100% - 180px);
+	overflow: hidden;
+	text-align: left;
 	user-select: none;
 	-webkit-user-select: none;
 	color: white;
+}
+
+.video-artist {
+	position: absolute;
+	right: 0px;
+	top: 25px;
+	width: 100%;
+	color: rgba(255, 255, 255, 0.781);
 }
 
 .add-button {
 	position: absolute;
 	height: 35px;
 	right: 7.5px;
-	top: 7.5px;
+	bottom: 7.5px;
 	cursor: pointer;
 }
 
@@ -435,8 +471,8 @@ input:focus {
 	z-index: 100;
 	display: block;
 	position: absolute;
-	left: 0px;
 	top: 0px;
+	left: 0px;
 }
 
 ::-webkit-scrollbar {
