@@ -7,6 +7,7 @@ const express = require("express");
 const request = require("request");
 const fs = require("file-system");
 const md5 = require("md5");
+const beautify = require("json-beautify");
 
 Array.prototype.equals = function(array) {
     if (!array) return false;
@@ -26,7 +27,6 @@ Array.prototype.equals = function(array) {
 Object.defineProperty(Array.prototype, "equals", { enumerable: false });
 
 var app = express();
-
 app.use(express.static("./website"));
 app.use(bp.json());
 app.use(
@@ -35,8 +35,22 @@ app.use(
     })
 );
 
-var localOptions = fs.readFileSync("options.json");
-localOptions = JSON.parse(localOptions);
+var localOptions = {
+    port: 80,
+    redirect: "http://localhost/auth",
+    client_id: "SPOTIFY_CLIENT_ID",
+    client_secret: "SPOTIFY_CLIENT_SECRET",
+    youtube_keys: ["YOUTUBE_KEY"]
+};
+
+try {
+    var optionsFile = JSON.parse(fs.readFileSync("options.json"));
+    for (var key in optionsFile) {
+        localOptions[key] = optionsFile[key];
+    }
+} catch (e) {}
+
+fs.writeFileSync("options.json", beautify(localOptions, null, 4, 100));
 
 var active_key = 0;
 var port = localOptions.port;
@@ -46,8 +60,8 @@ var client_id = localOptions.client_id;
 var client_secret = localOptions.client_secret;
 
 console.log(`
-Started server on ${port}
-${keys.length} YT-KEYS`);
+Started server on port: ${port}
+[${keys.length}] YT-KEYS`);
 
 var cachedSearches = [];
 
@@ -148,23 +162,12 @@ class Room {
                     var diff = Math.abs(
                         this.progress - Math.round(body.progress_ms / 1000)
                     );
-
-                    /*  if (!this.seeking && diff > 50 && !isNaN(diff)) {
-						if (this.queue && this.queue.length > 0) {
-							this.next();
-						} else {
-							this.controlAudio(false);
-						}
-						this.update();
-					} else { */
                     if (Date.now() - this.seeking > 1000) {
                         this.progress = Math.round(body.progress_ms / 1000);
                         this.length = Math.round(body.item.duration_ms / 1000);
                     }
                     console.log("SEEK UPDATED FROM SPOTIFY", this.progress);
                     this.update();
-
-                    /*  } */
                 }
             });
         });

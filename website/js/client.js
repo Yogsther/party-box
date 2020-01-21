@@ -216,10 +216,11 @@ function bump(id) {
 
 function createQueueEntry(title, thumbnail, id, bumped) {
     return `
-<div class="entry">
+<div class="entry" onclick="bump('${id}')">
+	<div class="entry-overlay" style="background: url(${thumbnail})"></div>
     <img class="thumbnail" src="${thumbnail}">
     <span class="video-title">${title}</span>
-    <svg xmlns="http://www.w3.org/2000/svg" title="Bump item" onclick="bump('${id}')" style="fill:var(${
+    <svg xmlns="http://www.w3.org/2000/svg" title="Bump item"  style="fill:var(${
         bumped ? "--blu" : "--dark"
     });" class="add-button" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
 </div>`;
@@ -326,7 +327,8 @@ socket.on("videos", results => {
 
 function createEntry(title, thumbnail, id, fun) {
     return `
-<div class="entry">
+<div class="entry" style="background:url(${thumbnail});">
+	<div class="entry-overlay"></div>
     <img class="thumbnail" src="${thumbnail}">
     <span class="video-title">${title}</span>
     <svg xmlns="http://www.w3.org/2000/svg" onclick="${fun}('${id}')" item-id="${id}" class="add-button" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>

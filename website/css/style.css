@@ -7,11 +7,7 @@
 }
 
 * {
-	/* font-family: "Roboto", sans-serif; */
 	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-	;
-	/* user-select: none;
-	-webkit-user-select: none; */
 }
 
 html {
@@ -143,7 +139,7 @@ input:focus {
 	position: relative;
 	height: 10px;
 	border-radius: 100px;
-	background-color: #111;
+	background-color: #041529;
 	margin: 0 auto;
 	margin-top: 30px;
 }
@@ -386,7 +382,7 @@ input:focus {
 .entry {
 	display: block;
 	position: relative;
-	height: 50px;
+	/* 	height: 50px; */
 	width: 90%;
 	border-radius: 10px;
 	background-color: #eaeaea;
@@ -394,6 +390,25 @@ input:focus {
 	margin-bottom: 10px;
 	margin-top: 10px;
 	overflow: hidden;
+	height: 80px;
+}
+
+.entry-overlay {
+	display: block;
+	width: calc(100% + 60px);
+	height: 140px;
+	position: absolute;
+	top: -30px;
+	left: -30px;
+	pointer-events: none;
+	filter: blur(5px);
+
+	z-index: 0;
+	background-size: fill;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: center;
+	background-image: linear-gradient(90deg, black, rgba(0, 0, 0, .5)) !important;
 }
 
 .video-title {
@@ -404,6 +419,7 @@ input:focus {
 	width: calc(100% - 180px);
 	user-select: none;
 	-webkit-user-select: none;
+	color: white;
 }
 
 .add-button {
@@ -416,6 +432,11 @@ input:focus {
 
 .thumbnail {
 	height: 100%;
+	z-index: 100;
+	display: block;
+	position: absolute;
+	left: 0px;
+	top: 0px;
 }
 
 ::-webkit-scrollbar {
@@ -573,8 +594,8 @@ a:visited {
 
 #room-code-tiny {
 	display: block;
-	font-size: 40px;
-	bottom: 42px;
+	font-size: 47px;
+	bottom: 35px;
 	right: 0px;
 	position: absolute;
 	width: 180px;

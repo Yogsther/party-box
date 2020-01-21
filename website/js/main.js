@@ -180,9 +180,11 @@ function initializeHost() {
             height: document.body.offsetHeight,
             videoId: "",
             playerVars: {
-                autoplay: true,
+                autoplay: 1,
                 rel: 0,
-                showinfo: 0
+                showinfo: 0,
+                ecver: 2,
+                controls: 0
             },
             events: {
                 onReady: onYoutubeReady,
