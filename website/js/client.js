@@ -223,12 +223,12 @@ function createQueueEntry(title, artist, thumbnail, id, bumped, type) {
 	<div class="gradient-effect"></div>
     <img class="thumbnail" src="${thumbnail}">
 	
-	<div class="titles" style="width: ${type == "song" ? "65%" : "47%"};">
+	<div class="titles">
 		<span class="video-title">${title}</span>
 		<span class="video-artist">${artist}</span>
 	</div>
     <svg xmlns="http://www.w3.org/2000/svg" title="Bump item"  style="fill:var(${
-        bumped ? "--blu" : "--dark"
+        bumped ? "--blu" : "--light"
     });" class="add-button" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
 </div>`;
 }
@@ -239,7 +239,7 @@ function createEntry(title, artist, thumbnail, id, fun, type) {
 		<div class="entry-overlay" style="background: url(${thumbnail})"></div>
 		<div class="gradient-effect"></div>
     <img class="thumbnail" src="${thumbnail}">
-    <div class="titles" style="width: ${type == "song" ? "65%" : "47%"};">
+    <div class="titles">
 		<span class="video-title">${title}</span>
 		<span class="video-artist">${artist}</span>
 	</div>
@@ -357,7 +357,7 @@ function updateQueueButtons() {
     for (var el of document.getElementsByClassName("add-button")) {
         let id = el.getAttribute("item-id");
         if (!id) return;
-        el.style.fill = inQueue(id) ? "var(--blu)" : "var(--dark)";
+        el.style.fill = inQueue(id) ? "var(--blu)" : "var(--light)";
     }
 }
 

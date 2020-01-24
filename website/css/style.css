@@ -1,9 +1,10 @@
 :root {
 	--pink: #ff073c;
-	--blu: #1f76d4;
+	--blu: #1c89fd;
 	--dark-blu: #1964b5;
 	--dark-pink: #cb0d35;
 	--dark: rgb(27, 27, 27);
+	--light: rgb(228, 228, 228);
 }
 
 * {
@@ -380,6 +381,7 @@ input:focus {
 }
 
 .entry {
+	cursor: pointer;
 	display: block;
 	position: relative;
 	/* 	height: 50px; */
@@ -403,7 +405,8 @@ input:focus {
 	top: -30px;
 	left: -30px;
 	pointer-events: none;
-	background-image: linear-gradient(270deg, black 10%, rgba(0, 0, 0, 0)) !important;
+	background-color: rgba(0, 0, 0, 0.3);
+	/* background-image: linear-gradient(180deg, rgba(163, 30, 30, 0) 10%, black 100%) !important; */
 }
 
 .entry-overlay {
@@ -424,15 +427,25 @@ input:focus {
 
 }
 
-.titles {
-	width: 65%;
-	display: block;
-	position: absolute;
-	top: 20px;
-	right: 10px;
-	overflow: hidden;
-	height: 50px;
+.thumbnail {
+	height: 100%;
 
+	z-index: 100;
+	display: inline-block;
+	position: relative;
+	top: 0px;
+	border-radius: 15px;
+	left: 0px;
+}
+
+.titles {
+	width: calc(80% - 150px);
+	display: inline-block;
+	position: relative;
+	overflow: hidden;
+	height: 65px;
+	z-index: 100;
+	margin-left: 20px;
 }
 
 .video-title {
@@ -455,25 +468,20 @@ input:focus {
 	right: 0px;
 	top: 25px;
 	width: 100%;
+	height: 20px;
+	overflow: hidden;
 	color: rgba(255, 255, 255, 0.781);
 }
 
 .add-button {
 	position: absolute;
-	height: 35px;
-	right: 7.5px;
-	bottom: 7.5px;
+	height: 45px;
+	right: 15px;
+	top: 22px;
 	cursor: pointer;
 }
 
-.thumbnail {
-	height: 100%;
-	z-index: 100;
-	display: block;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
+
 
 ::-webkit-scrollbar {
 	background-color: rgb(228, 228, 228);
@@ -630,8 +638,8 @@ a:visited {
 
 #room-code-tiny {
 	display: block;
-	font-size: 47px;
-	bottom: 35px;
+	font-size: 38px;
+	bottom: 39px;
 	right: 0px;
 	position: absolute;
 	width: 180px;

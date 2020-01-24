@@ -43,7 +43,7 @@
 
 
 ~ BUGS ~
- - PRIO: Skipping fast skips too many songs on spotify triggered by ended event from host!!!
- - Change scene not updaing background colors (gradient)
- - Adding something to the queue (video) is triggering two updates 
+ - Sometimes on resize the gradient effect goes black and wont recover
+ - Auth error with expired access token on first load (maybe force reload)
  - Youtube title errors (')
+ - Adding something to the queue (video) is triggering two updates 
