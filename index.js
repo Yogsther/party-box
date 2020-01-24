@@ -1,5 +1,6 @@
 const DEBUG = false;
 
+const Color = require("color");
 const http = require("http");
 const https = require("https");
 const bp = require("body-parser");
@@ -122,6 +123,9 @@ class Room {
         this.skipped_ended_song = false;
         this.seeking = false;
 
+        this.color = false;
+        this.colors = [];
+
         this.last_sent_room = {};
         this.access_token_updated = 0;
         this.updating_spotify = false;
@@ -228,6 +232,18 @@ class Room {
         this.update();
     }
 
+    setColors() {
+        this.colors = [];
+        for (var i = 0; i < 5; i++) {
+            this.colors.push(
+                Color(this.color)
+                    .darken(1 - 1 / (i + 1))
+                    .rgb()
+                    .toString()
+            );
+        }
+    }
+
     update(callback = () => {}) {
         this.progress = Math.round(this.progress);
         this.skips_needed = Math.ceil(this.members.length / 2);
@@ -250,6 +266,12 @@ class Room {
         this.title = this.queue[0]
             ? cachedSearches[this.queue[0].id].title
             : "Queue empty";
+
+        if (this.queue.length == 0 || this.queue[0].type == "video") {
+            this.color = "#3370b5";
+        }
+
+        this.setColors();
 
         var packets = {};
         let room = Object.assign({}, this);
@@ -554,6 +576,15 @@ io.on("connection", socket => {
         room.checkSpotify();
         socket.emit("room_created", room.code);
         console.log("Room created " + room.code);
+    });
+
+    socket.on("set_color", color => {
+        for (var room of rooms) {
+            if (room.socket_id == socket.id) {
+                room.color = color;
+                room.update();
+            }
+        }
     });
 
     socket.on("disconnect", () => {

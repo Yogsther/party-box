@@ -89,8 +89,10 @@ function setPaletteFromImage(image) {
     var colors = ct.getPalette(image);
     for (var i = 0; i < colors.length; i++) {
         var colorSet = colors[i];
+
         palette.push(`rgb(${colorSet[0]}, ${colorSet[1]}, ${colorSet[2]})`);
     }
+    socket.emit("set_color", palette[0]);
     updatePalette();
 }
 

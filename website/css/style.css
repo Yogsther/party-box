@@ -4,7 +4,8 @@
 	--dark-blu: #1964b5;
 	--dark-pink: #cb0d35;
 	--dark: rgb(27, 27, 27);
-	--light: rgb(228, 228, 228);
+	--light: rgb(243, 243, 243);
+	--unselected: rgb(31, 31, 31);
 }
 
 * {
@@ -143,6 +144,7 @@ input:focus {
 	background-color: #041529;
 	margin: 0 auto;
 	margin-top: 30px;
+
 }
 
 #progress {
@@ -154,10 +156,12 @@ input:focus {
 	position: absolute;
 	top: 0px;
 	left: 0px;
+
 	/*     transition: all 1s; */
 }
 
 #point {
+
 	width: 20px;
 	height: 20px;
 	border-radius: 100px;
@@ -169,6 +173,7 @@ input:focus {
 	-webkit-user-drag: none;
 	user-select: none;
 	-webkit-user-select: none;
+
 }
 
 #media-queue {
@@ -471,6 +476,8 @@ input:focus {
 	height: 20px;
 	overflow: hidden;
 	color: rgba(255, 255, 255, 0.781);
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 .add-button {
@@ -479,6 +486,10 @@ input:focus {
 	right: 15px;
 	top: 22px;
 	cursor: pointer;
+
+	stroke: 5px solid #646464;
+
+
 }
 
 
