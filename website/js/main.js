@@ -9,6 +9,23 @@ if (!uuid || uuid.length == 0) {
     localStorage.setItem("uuid", uuid);
 }
 
+var room = {
+    progress: 150,
+    length: 300
+};
+
+var point;
+var clientPosition = 0;
+
+var finger = {
+    down: false,
+    initialTouch: { x: 0, y: 0 }
+};
+
+var inRoom = false;
+var controllsOpen = false;
+var mouseLocked = false;
+
 var isHost = false;
 var currentlyPlaying = false;
 
@@ -73,7 +90,7 @@ socket.on("invalid_code", () => {
 });
 
 socket.on("update", r => {
-    console.log("Updated packets ", Object.keys(r));
+    //console.log("Updated packets ", Object.keys(r));
     if (r["update_ids"] != room.update_ids + 1) {
         socket.emit("sync");
     }
@@ -105,6 +122,11 @@ socket.on("update", r => {
                 if (r["title"]) {
                     document.getElementById("album").src =
                         room.queue[0].image + "?" + new Date().getTime();
+
+                    (room.queue[0].image ==
+                        "https://i.scdn.co/image/8b49a035b93b16d52113dffba0a895a45f70a8ae"
+                        ? enableSpinning
+                        : disableSpinning)();
 
                     document
                         .getElementById("album")

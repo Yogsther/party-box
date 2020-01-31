@@ -607,6 +607,20 @@ a:visited {
 	margin-bottom: 15px;
 }
 
+.rotate {
+	animation: rotation 20s infinite linear;
+}
+
+@keyframes rotation {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(359deg);
+	}
+}
+
 #spotify-login-button:hover {
 	background-color: #1ed760;
 }

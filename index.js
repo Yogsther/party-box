@@ -162,20 +162,26 @@ class Room {
                 },
                 json: true
             };
-            request.get(options, (error, response, body) => {
-                if (body && body.item) {
-                    var diff = Math.abs(
-                        this.progress - Math.round(body.progress_ms / 1000)
-                    );
-                    if (Date.now() - this.seeking > 1000) {
-                        this.progress = Math.round(body.progress_ms / 1000);
-                        this.length = Math.round(body.item.duration_ms / 1000);
-                    }
+            request
+                .get(options, (error, response, body) => {
+                    if (body && body.item) {
+                        var diff = Math.abs(
+                            this.progress - Math.round(body.progress_ms / 1000)
+                        );
+                        if (Date.now() - this.seeking > 1000) {
+                            this.progress = Math.round(body.progress_ms / 1000);
+                            this.length = Math.round(
+                                body.item.duration_ms / 1000
+                            );
+                        }
 
-                    //                    console.log("Spotify update");
-                    this.update();
-                }
-            });
+                        //                    console.log("Spotify update");
+                        this.update();
+                    }
+                })
+                .on("error", function(e) {
+                    console.log(e);
+                });
         });
     }
 
@@ -209,10 +215,14 @@ class Room {
             },
             json: true
         };
-        request.put(options, (error, response, body) => {
-            //console.log("Control update");
-            this.update();
-        });
+        request
+            .put(options, (error, response, body) => {
+                //console.log("Control update");
+                this.update();
+            })
+            .on("error", function(e) {
+                console.log(e);
+            });
     }
 
     next(callback = () => {}) {
@@ -309,17 +319,21 @@ class Room {
                     json: true
                 };
 
-                request.put(options, (error, response, body) => {
-                    if (this.queue[0])
-                        this.serverPlayedTrack = this.queue[0].id;
-                    else {
-                        this.controlAudio(false);
-                        return;
-                    }
-                    this.skipped_ended_song = false;
-                    this.paused = false;
-                    callback();
-                });
+                request
+                    .put(options, (error, response, body) => {
+                        if (this.queue[0])
+                            this.serverPlayedTrack = this.queue[0].id;
+                        else {
+                            this.controlAudio(false);
+                            return;
+                        }
+                        this.skipped_ended_song = false;
+                        this.paused = false;
+                        callback();
+                    })
+                    .on("error", function(e) {
+                        console.log(e);
+                    });
             } else {
                 callback();
             }
@@ -370,18 +384,27 @@ class Room {
                 json: true
             };
 
-            request.post(options, (error, response, body) => {
-                if (body.error) {
-                    this.access_token = false;
-                    this.refresh_token = false;
-                    io.to(this.socket_id).emit("spotify_disabled");
-                } else {
-                    this.access_token = body.access_token;
-                    this.access_token_updated = Date.now();
-                    io.to(this.socket_id).emit("new_token", this.access_token);
-                    callback();
-                }
-            });
+            request
+                .post(options, (error, response, body) => {
+                    if (body) {
+                        if (body.error) {
+                            this.access_token = false;
+                            this.refresh_token = false;
+                            io.to(this.socket_id).emit("spotify_disabled");
+                        } else {
+                            this.access_token = body.access_token;
+                            this.access_token_updated = Date.now();
+                            io.to(this.socket_id).emit(
+                                "new_token",
+                                this.access_token
+                            );
+                            callback();
+                        }
+                    }
+                })
+                .on("error", function(e) {
+                    console.log(e);
+                });
         }
     }
 
@@ -461,8 +484,9 @@ app.get("/auth", (req, res) => {
         json: true
     };
 
-    request.post(options, (error, response, body) => {
-        res.send(`
+    request
+        .post(options, (error, response, body) => {
+            res.send(`
         <html>
         <body>
         <script>
@@ -473,7 +497,10 @@ app.get("/auth", (req, res) => {
         </body>
         </html>
     `);
-    });
+        })
+        .on("error", function(e) {
+            console.log(e);
+        });
 });
 
 io.on("connection", socket => {
@@ -543,9 +570,13 @@ io.on("connection", socket => {
             },
             json: true
         };
-        request.post(options, (error, response, body) => {
-            socket.emit("new_token", body.access_token);
-        });
+        request
+            .post(options, (error, response, body) => {
+                socket.emit("new_token", body.access_token);
+            })
+            .on("error", function(e) {
+                console.log(e);
+            });
     });
 
     socket.on("join", req => {
@@ -649,12 +680,13 @@ io.on("connection", socket => {
                                     },
                                     json: true
                                 };
-                                request.put(
-                                    options,
-                                    (error, response, body) => {
+                                request
+                                    .put(options, (error, response, body) => {
                                         room.seeking = Date.now();
-                                    }
-                                );
+                                    })
+                                    .on("error", function(e) {
+                                        console.log(e);
+                                    });
                             });
                         }
 
@@ -826,7 +858,11 @@ io.on("connection", socket => {
             },
             json: true
         };
-        request.put(options, (error, response, body) => {});
+        request
+            .put(options, (error, response, body) => {})
+            .on("error", function(e) {
+                console.log(e);
+            });
     });
 
     socket.on("search", query => {

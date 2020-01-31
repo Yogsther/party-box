@@ -35,18 +35,21 @@
 [x] iPhone PWA improvements
 [x] Blue colors
 [x] Generate options.json and beautify it
-
-
 [x] Better look to search results (blur, gradient)
+[x] JESUS IS KING (Spotify) Easter egg
 [x] Color match background for phones
-[ ] Swipe up to close / open media controlls
+[x] Swipe up to close / open media controlls
+
+[ ] Fix contrast colors when the background is too bright
+[ ] Add timecodes to youtube videos (in search and queue)
 [ ] Share dialog (android) https://chodounsky.net/2019/03/24/progressive-web-application-as-a-share-option-in-android/
 
 
 ~ BUGS ~
- - Sometimes the prod crashes
- - Sometimes you cant bumb entries
- - Sometimes on resize the gradient effect goes black and wont recover
- - Auth error with expired access token on first load (maybe force reload)
+ [FIXED] Sometimes on resize the gradient effect goes black and wont recover
+ [MAYBE FIXED?] Sometimes the prod crashes
+ [MAYBE FIXED?] Sometimes you cant bumb entries
+ [NOT REPEATABLE] Auth error with expired access token on first load (maybe force reload)
+ 
  - Youtube title errors (')
  - Adding something to the queue (video) is triggering two updates 

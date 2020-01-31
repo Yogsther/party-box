@@ -1,15 +1,3 @@
-var inRoom = false;
-var controllsOpen = false;
-var mouseLocked = false;
-
-var room = {
-    progress: 150,
-    length: 300
-};
-
-var point;
-var clientPosition = 0;
-
 /* alert(document.body.offsetHeight); */
 
 function joinRoom() {
@@ -91,12 +79,16 @@ function joinRoom() {
     function mousedown(e) {
         if (e.target.id == "point") {
             mouseLocked = true;
-        } /*  else {
-            var mediaQueueInPath = false;
-        } */
+        }
+
+        finger.down = true;
+        if (e.touches) {
+            finger.initialTouch = getPos(e);
+        }
     }
 
     function mouseup(e) {
+        finger.down = false;
         if (mouseLocked) {
             mouseLocked = false;
             socket.emit("seek", room.progress);
@@ -110,6 +102,35 @@ function joinRoom() {
             } else {
                 updatePlayer(e.clientX);
             }
+        }
+
+        if (finger.down && room) {
+            var diff = finger.initialTouch.y - getPos(e).y;
+            var range = 100;
+            //console.log(diff, range);
+            if (diff > range && controllsOpen) {
+                togglePlayer();
+            } else if (
+                diff < -range &&
+                !controllsOpen &&
+                finger.initialTouch.y < 120
+            ) {
+                togglePlayer();
+            }
+        }
+    }
+
+    function getPos(event) {
+        if (event.touches) {
+            return {
+                x: event.touches[0].pageX,
+                y: event.touches[0].pageY
+            };
+        } else {
+            return {
+                x: event.pageX,
+                y: event.pageY
+            };
         }
     }
 
@@ -253,6 +274,7 @@ function createEntry(title, artist, thumbnail, id, fun, type) {
 }
 
 function togglePlayer() {
+    finger.down = false;
     controllsOpen = !controllsOpen;
     document.getElementById("media-queue").style.transition =
         "all 0.2s ease-out";

@@ -47,6 +47,19 @@ function updatePalette() {
     }
 }
 
+function enableSpinning() {
+    //https://i.scdn.co/image/8b49a035b93b16d52113dffba0a895a45f70a8ae
+    document.getElementById("album").classList.add("rotate");
+    document.getElementById("canvas").style.display = "none";
+    document.body.style.background = "white";
+}
+
+function disableSpinning() {
+    document.getElementById("album").classList.remove("rotate");
+    document.getElementById("canvas").style.display = "block";
+    document.body.style.background = "black";
+}
+
 function stepParticles() {
     var speed = 0.2;
     for (let particle of gradientParticles) {
