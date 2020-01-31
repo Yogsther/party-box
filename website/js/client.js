@@ -217,6 +217,7 @@ function onUpdate() {
 }
 
 function bump(id) {
+    console.log("id");
     socket.emit("bump", id);
 }
 

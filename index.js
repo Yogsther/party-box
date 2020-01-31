@@ -60,8 +60,7 @@ var redirect_uri = localOptions.redirect;
 var client_id = localOptions.client_id;
 var client_secret = localOptions.client_secret;
 
-console.log(`
-Started server on port: ${port}
+console.log(`Started server on port: ${port}
 [${keys.length}] YT-KEYS`);
 
 var cachedSearches = [];
@@ -173,6 +172,7 @@ class Room {
                         this.length = Math.round(body.item.duration_ms / 1000);
                     }
 
+                    //                    console.log("Spotify update");
                     this.update();
                 }
             });
@@ -210,6 +210,7 @@ class Room {
             json: true
         };
         request.put(options, (error, response, body) => {
+            //console.log("Control update");
             this.update();
         });
     }
@@ -229,6 +230,7 @@ class Room {
 
     refreshUpdate() {
         this.last_sent_room = {};
+        //console.log("Refresh update");
         this.update();
     }
 
@@ -582,6 +584,7 @@ io.on("connection", socket => {
         for (var room of rooms) {
             if (room.socket_id == socket.id) {
                 room.color = color;
+                //console.log("Color update");
                 room.update();
             }
         }
@@ -751,6 +754,7 @@ io.on("connection", socket => {
             if (room.socket_id == socket.id) {
                 room.progress = status.progress;
                 room.length = status.length;
+                //console.log("Status update");
                 room.update();
             }
         }

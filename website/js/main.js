@@ -73,7 +73,7 @@ socket.on("invalid_code", () => {
 });
 
 socket.on("update", r => {
-    //console.log("Updated packets ", Object.keys(r));
+    console.log("Updated packets ", Object.keys(r));
     if (r["update_ids"] != room.update_ids + 1) {
         socket.emit("sync");
     }
@@ -102,12 +102,14 @@ socket.on("update", r => {
                 if (youtubePlayer.pauseVideo) youtubePlayer.pauseVideo();
                 playAudio(room.queue[0].id);
 
-                document.getElementById("album").src =
-                    room.queue[0].image + "?" + new Date().getTime();
+                if (r["title"]) {
+                    document.getElementById("album").src =
+                        room.queue[0].image + "?" + new Date().getTime();
 
-                document
-                    .getElementById("album")
-                    .setAttribute("crossOrigin", "");
+                    document
+                        .getElementById("album")
+                        .setAttribute("crossOrigin", "");
+                }
             }
         } else {
             showRoomStatus();

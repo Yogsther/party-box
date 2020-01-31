@@ -75,6 +75,7 @@ function renderCanvas() {
     }
 
     function drawGradient(x, y, color) {
+        if (!color) return;
         var size = 1500;
         var gradient = ctx.createRadialGradient(x, y, size / 50, x, y, size);
         gradient.addColorStop(0, color);

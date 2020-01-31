@@ -44,6 +44,8 @@
 
 
 ~ BUGS ~
+ - Sometimes the prod crashes
+ - Sometimes you cant bumb entries
  - Sometimes on resize the gradient effect goes black and wont recover
  - Auth error with expired access token on first load (maybe force reload)
  - Youtube title errors (')
