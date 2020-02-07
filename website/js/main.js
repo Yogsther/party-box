@@ -29,10 +29,6 @@ var mouseLocked = false;
 var isHost = false;
 var currentlyPlaying = false;
 
-navigator.serviceWorker.register("js/sw.js", {
-    useCache: false
-});
-
 window.onload = () => {
     resizeCanvas();
     initializeHost();
