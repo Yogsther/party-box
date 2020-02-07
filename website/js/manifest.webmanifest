@@ -5,14 +5,5 @@
 	"icons": [{
 		"src": "img/icon_250.png",
 		"sizes": "250x250"
-	}],
-	"share_target": {
-		"action": "/",
-		"method": "GET",
-		"params": {
-			"title": "title",
-			"text": "text",
-			"url": "url"
-		}
-	}
+	}]
 }
