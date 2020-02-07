@@ -46,10 +46,10 @@
 
 
 ~ BUGS ~
- [FIXED] Sometimes on resize the gradient effect goes black and wont recover
- [MAYBE FIXED?] Sometimes the prod crashes
- [MAYBE FIXED?] Sometimes you cant bumb entries
+ [ ] Sometimes the prod crashes
  [NOT REPEATABLE] Auth error with expired access token on first load (maybe force reload)
+ [FIXED] Sometimes you cant bumb entries
+ [FIXED] Sometimes on resize the gradient effect goes black and wont recover
  
  - Youtube title errors (')
  - Adding something to the queue (video) is triggering two updates 

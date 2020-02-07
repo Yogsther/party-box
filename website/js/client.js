@@ -79,10 +79,9 @@ function joinRoom() {
     function mousedown(e) {
         if (e.target.id == "point") {
             mouseLocked = true;
-        }
+        } else {
+            finger.down = true;
 
-        finger.down = true;
-        if (e.touches) {
             finger.initialTouch = getPos(e);
         }
     }
@@ -113,7 +112,7 @@ function joinRoom() {
             } else if (
                 diff < -range &&
                 !controllsOpen &&
-                finger.initialTouch.y < 120
+                finger.initialTouch.y < 165
             ) {
                 togglePlayer();
             }
@@ -238,7 +237,6 @@ function onUpdate() {
 }
 
 function bump(id) {
-    console.log("id");
     socket.emit("bump", id);
 }
 

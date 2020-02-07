@@ -42,6 +42,9 @@ window.onload = () => {
 
     gradientLoop();
     startLoop();
+
+    const parsedUrl = new URL(window.location);
+    alert(parsedUrl.searchParams.get("url"));
 };
 
 function code(el) {

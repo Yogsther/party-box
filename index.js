@@ -572,7 +572,7 @@ io.on("connection", socket => {
         };
         request
             .post(options, (error, response, body) => {
-                socket.emit("new_token", body.access_token);
+                if (body) socket.emit("new_token", body.access_token);
             })
             .on("error", function(e) {
                 console.log(e);
