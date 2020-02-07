@@ -44,7 +44,8 @@ window.onload = () => {
     startLoop();
 
     const parsedUrl = new URL(window.location);
-    alert(parsedUrl.searchParams.get("url"));
+    if (parsedUrl.searchParams.get("url"))
+        alert(parsedUrl.searchParams.get("url"));
 };
 
 function code(el) {
