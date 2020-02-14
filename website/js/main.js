@@ -9,6 +9,10 @@ if (!uuid || uuid.length == 0) {
     localStorage.setItem("uuid", uuid);
 }
 
+socket.on("disconnect", () => {
+    location.reload();
+});
+
 var room = {
     progress: 150,
     length: 300

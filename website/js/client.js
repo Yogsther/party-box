@@ -77,11 +77,15 @@ function joinRoom() {
     });
 
     function mousedown(e) {
-        if (e.target.id == "point") {
+        if (
+            e.target.id == "progress" ||
+            e.target.id == "track" ||
+            e.target.id == "point"
+        ) {
             mouseLocked = true;
+            mousemove(e);
         } else {
             finger.down = true;
-
             finger.initialTouch = getPos(e);
         }
     }

@@ -144,9 +144,10 @@ class Room {
         }
 
         if (this.queue[0] && this.queue[0].type == "song") {
-            if (this.ticks % 10 == 0) this.statusUpdate();
-            if (this.length > 5 && this.length - this.progress < 4) {
-                // Less than 4 seconds left on a spotify track
+            // Check with spotify ever 20 seconds
+            if (this.ticks % 20 == 0) this.statusUpdate();
+            if (this.length > 5 && this.length - this.progress < 2.5) {
+                // Less than 2.5 seconds left on a spotify track
 
                 this.next();
             }
@@ -162,26 +163,33 @@ class Room {
                 },
                 json: true
             };
-            request
-                .get(options, (error, response, body) => {
-                    if (body && body.item) {
-                        var diff = Math.abs(
-                            this.progress - Math.round(body.progress_ms / 1000)
-                        );
-                        if (Date.now() - this.seeking > 1000) {
-                            this.progress = Math.round(body.progress_ms / 1000);
-                            this.length = Math.round(
-                                body.item.duration_ms / 1000
+            try {
+                request
+                    .get(options, (error, response, body) => {
+                        if (body && body.item) {
+                            var diff = Math.abs(
+                                this.progress -
+                                    Math.round(body.progress_ms / 1000)
                             );
-                        }
+                            if (Date.now() - this.seeking > 1000) {
+                                this.progress = Math.round(
+                                    body.progress_ms / 1000
+                                );
+                                this.length = Math.round(
+                                    body.item.duration_ms / 1000
+                                );
+                            }
 
-                        //                    console.log("Spotify update");
-                        this.update();
-                    }
-                })
-                .on("error", function(e) {
-                    console.log(e);
-                });
+                            //                    console.log("Spotify update");
+                            this.update();
+                        }
+                    })
+                    .on("error", function(e) {
+                        console.log(e);
+                    });
+            } catch (e) {
+                console.log(e);
+            }
         });
     }
 
@@ -215,14 +223,18 @@ class Room {
             },
             json: true
         };
-        request
-            .put(options, (error, response, body) => {
-                //console.log("Control update");
-                this.update();
-            })
-            .on("error", function(e) {
-                console.log(e);
-            });
+        try {
+            request
+                .put(options, (error, response, body) => {
+                    //console.log("Control update");
+                    this.update();
+                })
+                .on("error", function(e) {
+                    console.log(e);
+                });
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     next(callback = () => {}) {
@@ -319,21 +331,26 @@ class Room {
                     json: true
                 };
 
-                request
-                    .put(options, (error, response, body) => {
-                        if (this.queue[0])
-                            this.serverPlayedTrack = this.queue[0].id;
-                        else {
-                            this.controlAudio(false);
-                            return;
-                        }
-                        this.skipped_ended_song = false;
-                        this.paused = false;
-                        callback();
-                    })
-                    .on("error", function(e) {
-                        console.log(e);
-                    });
+                try {
+                    request
+                        .put(options, (error, response, body) => {
+                            if (this.queue[0])
+                                this.serverPlayedTrack = this.queue[0].id;
+                            else {
+                                this.controlAudio(false);
+                                return;
+                            }
+                            this.skipped_ended_song = false;
+                            this.paused = false;
+                            callback();
+                        })
+                        .on("error", function(e) {
+                            console.log(e);
+                        });
+                } catch (e) {
+                    console.log(e);
+                    callback();
+                }
             } else {
                 callback();
             }
@@ -384,27 +401,31 @@ class Room {
                 json: true
             };
 
-            request
-                .post(options, (error, response, body) => {
-                    if (body) {
-                        if (body.error) {
-                            this.access_token = false;
-                            this.refresh_token = false;
-                            io.to(this.socket_id).emit("spotify_disabled");
-                        } else {
-                            this.access_token = body.access_token;
-                            this.access_token_updated = Date.now();
-                            io.to(this.socket_id).emit(
-                                "new_token",
-                                this.access_token
-                            );
-                            callback();
+            try {
+                request
+                    .post(options, (error, response, body) => {
+                        if (body) {
+                            if (body.error) {
+                                this.access_token = false;
+                                this.refresh_token = false;
+                                io.to(this.socket_id).emit("spotify_disabled");
+                            } else {
+                                this.access_token = body.access_token;
+                                this.access_token_updated = Date.now();
+                                io.to(this.socket_id).emit(
+                                    "new_token",
+                                    this.access_token
+                                );
+                                callback();
+                            }
                         }
-                    }
-                })
-                .on("error", function(e) {
-                    console.log(e);
-                });
+                    })
+                    .on("error", function(e) {
+                        console.log(e);
+                    });
+            } catch (e) {
+                console.log(e);
+            }
         }
     }
 
@@ -484,9 +505,10 @@ app.get("/auth", (req, res) => {
         json: true
     };
 
-    request
-        .post(options, (error, response, body) => {
-            res.send(`
+    try {
+        request
+            .post(options, (error, response, body) => {
+                res.send(`
         <html>
         <body>
         <script>
@@ -497,10 +519,13 @@ app.get("/auth", (req, res) => {
         </body>
         </html>
     `);
-        })
-        .on("error", function(e) {
-            console.log(e);
-        });
+            })
+            .on("error", function(e) {
+                console.log(e);
+            });
+    } catch (e) {
+        console.log(e);
+    }
 });
 
 io.on("connection", socket => {
@@ -528,6 +553,7 @@ io.on("connection", socket => {
                                 stream.on("end", () => {
                                     data = JSON.parse(data);
                                     if (data.error) {
+                                        socket.emit("songs", []);
                                         room.refreshToken();
                                     } else {
                                         var songs = [];
@@ -570,13 +596,17 @@ io.on("connection", socket => {
             },
             json: true
         };
-        request
-            .post(options, (error, response, body) => {
-                if (body) socket.emit("new_token", body.access_token);
-            })
-            .on("error", function(e) {
-                console.log(e);
-            });
+        try {
+            request
+                .post(options, (error, response, body) => {
+                    if (body) socket.emit("new_token", body.access_token);
+                })
+                .on("error", function(e) {
+                    console.log(e);
+                });
+        } catch (e) {
+            console.log(e);
+        }
     });
 
     socket.on("join", req => {
@@ -680,13 +710,20 @@ io.on("connection", socket => {
                                     },
                                     json: true
                                 };
-                                request
-                                    .put(options, (error, response, body) => {
-                                        room.seeking = Date.now();
-                                    })
-                                    .on("error", function(e) {
-                                        console.log(e);
-                                    });
+                                try {
+                                    request
+                                        .put(
+                                            options,
+                                            (error, response, body) => {
+                                                room.seeking = Date.now();
+                                            }
+                                        )
+                                        .on("error", function(e) {
+                                            console.log(e);
+                                        });
+                                } catch (e) {
+                                    console.log(e);
+                                }
                             });
                         }
 
@@ -858,58 +895,66 @@ io.on("connection", socket => {
             },
             json: true
         };
-        request
-            .put(options, (error, response, body) => {})
-            .on("error", function(e) {
-                console.log(e);
-            });
+        try {
+            request
+                .put(options, (error, response, body) => {})
+                .on("error", function(e) {
+                    console.log(e);
+                });
+        } catch (e) {
+            console.log(e);
+        }
     });
 
     socket.on("search", query => {
         if (!query || query.trim() == 0) {
             socket.emit("videos", []);
         } else {
-            https.get(
-                `https://www.googleapis.com/youtube/v3/search?&order=viewcount&type=video&key=${
-                    keys[active_key % keys.length]
-                }&fields=items(id, snippet)&part=snippet&maxResults=10&q=${encodeURIComponent(
-                    encodeURIComponent(query)
-                        .split("%20")
-                        .join("+")
-                )}`,
-                stream => {
-                    let data = "";
-                    stream.on("data", chunk => {
-                        data += chunk;
-                    });
+            try {
+                https.get(
+                    `https://www.googleapis.com/youtube/v3/search?&order=viewcount&type=video&key=${
+                        keys[active_key % keys.length]
+                    }&fields=items(id, snippet)&part=snippet&maxResults=10&q=${encodeURIComponent(
+                        encodeURIComponent(query)
+                            .split("%20")
+                            .join("+")
+                    )}`,
+                    stream => {
+                        let data = "";
+                        stream.on("data", chunk => {
+                            data += chunk;
+                        });
 
-                    stream.on("end", () => {
-                        data = JSON.parse(data);
-                        if (data.error) {
-                            socket.emit("videos", []);
-                            active_key++;
-                            console.log("Switched to key " + active_key);
-                        } else {
-                            var videos = data.items;
-                            var cachedItems = [];
+                        stream.on("end", () => {
+                            data = JSON.parse(data);
+                            if (data.error) {
+                                socket.emit("videos", []);
+                                active_key++;
+                                console.log("Switched to key " + active_key);
+                            } else {
+                                var videos = data.items;
+                                var cachedItems = [];
 
-                            for (var video of videos) {
-                                var cachedItem = new CachedItem(
-                                    video.id.videoId,
-                                    video.snippet.title,
+                                for (var video of videos) {
+                                    var cachedItem = new CachedItem(
+                                        video.id.videoId,
+                                        video.snippet.title,
 
-                                    video.snippet.thumbnails.medium.url,
-                                    video.snippet.channelTitle
-                                );
-                                cachedItems.push(cachedItem);
-                                cachedSearches[cachedItem.id] = cachedItem;
+                                        video.snippet.thumbnails.medium.url,
+                                        video.snippet.channelTitle
+                                    );
+                                    cachedItems.push(cachedItem);
+                                    cachedSearches[cachedItem.id] = cachedItem;
+                                }
+
+                                socket.emit("videos", cachedItems);
                             }
-
-                            socket.emit("videos", cachedItems);
-                        }
-                    });
-                }
-            );
+                        });
+                    }
+                );
+            } catch (e) {
+                console.log("Youtube search failed");
+            }
         }
     });
 });
